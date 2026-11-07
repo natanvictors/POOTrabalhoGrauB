@@ -1,0 +1,7 @@
+codigo	nome	preco
+1	Refrigerante	8.5
+2	Cerveja	12.5
+3	Batata Frita	22.9
+4	Tabua de Frios	48
+5	Sanduiche	16
+6	Xis	32.5

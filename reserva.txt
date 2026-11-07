@@ -1,0 +1,7 @@
+dtInicio	dtFim	cliente	quarto	status
+02/10/2026	04/10/2026	Fernando	1	A
+03/10/2026	08/10/2026	Maria	3	I
+07/10/2026	13/10/2026	Pedro	5	I
+15/10/2026	16/10/2026	Ana	1	A
+15/10/2026	20/10/2026	Maria	4	A
+18/10/2026	26/10/2026	Caio	2	A
