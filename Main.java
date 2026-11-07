@@ -1,14 +1,27 @@
-import java.lang.System;
-
 public class Main {
-    public static void main(String[] args) {
+
+    private static void mostraMenu() {
+        System.out.println("===== POUSADA =====");
+        System.out.println("1 - Consultar disponibilidade");
+        System.out.println("2 - Consultar reserva");
+        System.out.println("3 - Realizar reserva");
+        System.out.println("4 - Cancelar reserva");
+        System.out.println("5 - Realizar check-in");
+        System.out.println("6 - Realizar check-out");
+        System.out.println("7 - Registrar consumo");
+        System.out.println("8 - Salvar");
+        System.out.println("0 - Sair");
         System.out.println("Selecione uma opção");
-        int opt = Teclado.leInt();
-        while (true) {
+    }
+
+    public static void main(String[] args) {
+        int opt;
+        do {
+            mostraMenu();
+            opt = Teclado.leInt();
             switch (opt) {
                 case 0:
                     System.out.println("Saindo do sistema...");
-                    System.exit(0);
                     break;
                 case 1:
                     break;
@@ -30,6 +43,6 @@ public class Main {
                     System.out.println("Opção inválida, tente novamente.");
                     break;
             }
-        }
+        } while (opt != 0);
     }
 }
