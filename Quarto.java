@@ -1,8 +1,12 @@
 import java.util.ArrayList;
 
 public class Quarto {
-    int numero;
-    char categoria;
-    double diaria;
-    ArrayList<Produto> produtos;
+    private int numero;
+    private char categoria;
+    private double diaria;
+    private ArrayList<Produto> consumo;
+
+    public void adicionaConsumo(ArrayList<Produto> consumo,  Produto produto){
+
+    }
 }

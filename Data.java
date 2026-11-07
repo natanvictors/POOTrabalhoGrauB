@@ -1,5 +1,5 @@
 public class Data {
-    int dia;
-    int mes;
-    int ano;
+    private int dia;
+    private int mes;
+    private int ano;
 }

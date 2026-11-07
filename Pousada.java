@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class Pousada {
-    String nome;
-    String contato;
-    ArrayList<Quarto> quartos;
+    private String nome;
+    private String contato;
+    private ArrayList<Quarto> quartos;
 }

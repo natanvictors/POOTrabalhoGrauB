@@ -1,7 +1,7 @@
 public class Reserva {
-    Data dtInicio;
-    Data dtFim;
-    String cliente;
-    Quarto quarto;
-    char status;
+    private Data dtInicio;
+    private Data dtFim;
+    private String cliente;
+    private Quarto quarto;
+    private char status;
 }
