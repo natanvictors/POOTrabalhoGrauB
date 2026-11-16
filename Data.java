@@ -80,4 +80,34 @@ public class Data {
     public String toString() {
         return String.format("%02d/%02d/%04d", dia, mes, ano);
     }
+
+    /**
+     * Converte a data para o formato de arquivo: dd/mm/aaaa.
+     */
+    public String serializar() {
+        return toString();
+    }
+
+    /**
+     * Cria uma Data a partir de um texto no formato dd/mm/aaaa.
+     * Como o construtor valida a data, 31/02 ou mês 13 também são recusados.
+     *
+     * @throws IllegalArgumentException se o texto não estiver no formato ou a data não existir
+     */
+    public static Data deserializar(String texto) {
+        if (texto == null) {
+            throw new IllegalArgumentException("Data não informada");
+        }
+        String[] partes = texto.trim().split("/");
+        if (partes.length != 3) {
+            throw new IllegalArgumentException("A data deve estar no formato dd/mm/aaaa: " + texto);
+        }
+        try {
+            return new Data(Integer.parseInt(partes[0].trim()),
+                    Integer.parseInt(partes[1].trim()),
+                    Integer.parseInt(partes[2].trim()));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("A data deve conter apenas números: " + texto);
+        }
+    }
 }
