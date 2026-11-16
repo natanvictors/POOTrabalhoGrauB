@@ -47,4 +47,32 @@ public class Produto {
         return codigo + " - " + nome + " - R$ " + String.format("%.2f", preco);
     }
 
+    /**
+     * Formato de arquivo (produto.txt): codigo TAB nome TAB preco
+     */
+    public String serializar() {
+        return codigo + "\t" + nome + "\t" + preco;
+    }
+
+    /**
+     * Cria um Produto a partir de uma linha do produto.txt.
+     *
+     * @throws IllegalArgumentException se a linha estiver incompleta ou com valores inválidos
+     */
+    public static Produto deserializar(String linha) {
+        if (linha == null) {
+            throw new IllegalArgumentException("Linha de produto não informada");
+        }
+        String[] campos = linha.split("\t");
+        if (campos.length < 3) {
+            throw new IllegalArgumentException("Linha de produto incompleta: " + linha);
+        }
+        try {
+            return new Produto(Integer.parseInt(campos[0].trim()),
+                    campos[1].trim(),
+                    Double.parseDouble(campos[2].trim().replace(',', '.')));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Número inválido na linha de produto: " + linha);
+        }
+    }
 }
