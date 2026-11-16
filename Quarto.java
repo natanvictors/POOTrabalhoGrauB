@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Quarto {
     private int numero;
@@ -96,5 +97,74 @@ public class Quarto {
     @Override
     public String toString() {
         return numero + " - " + descricaoCategoria() + " - R$ " + String.format("%.2f", diaria);
+    }
+
+    /**
+     * @return a lista de produtos consumidos neste quarto
+     */
+    public ArrayList<Produto> getConsumo() {
+        return consumo;
+    }
+
+    /**
+     * Formato de arquivo (quarto.txt): numero TAB categoria TAB diaria [TAB codigoProduto ...]
+     * O consumo é gravado como códigos de produto, um por coluna (repetidos se consumiu mais de uma unidade).
+     */
+    public String serializar() {
+        StringBuilder linha = new StringBuilder();
+        linha.append(numero).append("\t").append(categoria).append("\t").append(diaria);
+        Iterator<Produto> iterador = consumo.iterator();
+        while (iterador.hasNext()) {
+            linha.append("\t").append(iterador.next().getCodigo());
+        }
+        return linha.toString();
+    }
+
+    /**
+     * Cria um Quarto a partir de uma linha do quarto.txt.
+     * Os códigos de produto do final da linha são trocados pelos objetos Produto da pousada.
+     *
+     * @throws IllegalArgumentException se a linha for inválida ou citar um produto que não existe
+     */
+    public static Quarto deserializar(String linha, ArrayList<Produto> produtosDaPousada) {
+        if (linha == null) {
+            throw new IllegalArgumentException("Linha de quarto não informada");
+        }
+        String[] campos = linha.split("\t");
+        if (campos.length < 3 || campos[1].trim().length() != 1) {
+            throw new IllegalArgumentException("Linha de quarto incompleta: " + linha);
+        }
+        try {
+            Quarto quarto = new Quarto(Integer.parseInt(campos[0].trim()),
+                    campos[1].trim().charAt(0),
+                    Double.parseDouble(campos[2].trim().replace(',', '.')));
+            for (int i = 3; i < campos.length; i++) {
+                String codigoTexto = campos[i].trim();
+                if (codigoTexto.isEmpty()) {
+                    continue; // colunas vazias no fim da linha são ignoradas
+                }
+                int codigo = Integer.parseInt(codigoTexto);
+                Produto produto = buscaProdutoPorCodigo(codigo, produtosDaPousada);
+                if (produto == null) {
+                    throw new IllegalArgumentException("Produto " + codigo + " não existe (quarto " + campos[0].trim() + ")");
+                }
+                quarto.adicionaConsumo(produto);
+            }
+            return quarto;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Número inválido na linha de quarto: " + linha);
+        }
+    }
+
+    // Procura um produto pelo código na lista informada; devolve null se não achar
+    private static Produto buscaProdutoPorCodigo(int codigo, ArrayList<Produto> produtos) {
+        Iterator<Produto> iterador = produtos.iterator();
+        while (iterador.hasNext()) {
+            Produto produto = iterador.next();
+            if (produto.getCodigo() == codigo) {
+                return produto;
+            }
+        }
+        return null;
     }
 }
