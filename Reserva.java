@@ -90,6 +90,22 @@ public class Reserva {
     }
 
     /**
+     * Calcula a quantidade de diárias da reserva.
+     * Regra: número de dias entre dtInicio (inclusive) e dtFim (exclusive).
+     * Ex.: check-in dia 3, check-out dia 5 → 2 diárias.
+     */
+    public int calculaQuantidadeDias() {
+        return dtInicio.diasAte(dtFim);
+    }
+
+    /**
+     * Calcula o valor total das diárias (sem consumo).
+     */
+    public double calculaValorDiarias() {
+        return calculaQuantidadeDias() * quarto.getDiaria();
+    }
+
+    /**
      * Cria uma Reserva a partir de uma linha do reserva.txt.
      * O quarto é localizado pelo número, na lista de quartos da pousada.
      *
