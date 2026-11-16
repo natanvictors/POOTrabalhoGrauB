@@ -15,6 +15,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        Pousada pousada = new Pousada();
+        pousada.carregaDados();
+
         int opt;
         do {
             mostraMenu();
@@ -31,11 +34,22 @@ public class Main {
                     break;
                 case 4:
                     break;
-                case 5:
+                case 5: // Check-in
+                    System.out.println("Número do quarto para check-in:");
+                    int quartoCheckIn = Teclado.leInt();
+                    System.out.println(pousada.realizaCheckIn(quartoCheckIn));
                     break;
-                case 6:
+                case 6: // Check-out
+                    System.out.println("Número do quarto para check-out:");
+                    int quartoCheckOut = Teclado.leInt();
+                    System.out.println(pousada.realizaCheckOut(quartoCheckOut));
                     break;
-                case 7:
+                case 7: // Registrar consumo
+                    System.out.println("Número do quarto:");
+                    int quartoConsumo = Teclado.leInt();
+                    System.out.println("Código do produto:");
+                    int codigoProduto = Teclado.leInt();
+                    System.out.println(pousada.registraConsumo(quartoConsumo, codigoProduto));
                     break;
                 case 8:
                     break;
