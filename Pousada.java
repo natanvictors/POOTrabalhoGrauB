@@ -1,3 +1,4 @@
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Pousada {
+
     private String nome;
     private String contato;
     private ArrayList<Quarto> quartos;
@@ -77,7 +79,6 @@ public class Pousada {
     }
 
     // ===================== Persistência =====================
-
     /**
      * Formato de arquivo (pousada.txt): nome TAB contato
      */
@@ -103,15 +104,16 @@ public class Pousada {
             setNome(campos[0].trim());
             setContato(campos[1].trim());
         } catch (IllegalArgumentException e) {
-            this.nome = nomeAnterior; // desfaz a alteração parcial para não deixar a pousada inconsistente
+            this.nome = nomeAnterior;
             throw e;
         }
     }
 
     /**
-     * Lê pousada.txt, produto.txt, quarto.txt e reserva.txt, nessa ordem
-     * (o quarto precisa dos produtos e a reserva precisa dos quartos).
-     * Linhas inválidas são ignoradas com um aviso; arquivo ausente deixa os dados vazios.
+     * Lê pousada.txt, produto.txt, quarto.txt e reserva.txt, nessa ordem (o
+     * quarto precisa dos produtos e a reserva precisa dos quartos). Linhas
+     * inválidas são ignoradas com um aviso; arquivo ausente deixa os dados
+     * vazios.
      */
     public void carregaDados() {
         quartos.clear();
@@ -162,8 +164,9 @@ public class Pousada {
     }
 
     /**
-     * Grava quarto.txt e reserva.txt. As reservas canceladas (C) ou com check-out (O)
-     * não são gravadas e também saem da memória, para a memória ficar igual ao arquivo.
+     * Grava quarto.txt e reserva.txt. As reservas canceladas (C) ou com
+     * check-out (O) não são gravadas e também saem da memória, para a memória
+     * ficar igual ao arquivo.
      *
      * @return true se os dois arquivos foram gravados
      */
@@ -202,8 +205,9 @@ public class Pousada {
     }
 
     /**
-     * Lê um arquivo texto (UTF-8), ignorando a 1ª linha (cabeçalho) e as linhas em branco.
-     * Se o arquivo não existir ou der erro de leitura, avisa e devolve uma lista vazia.
+     * Lê um arquivo texto (UTF-8), ignorando a 1ª linha (cabeçalho) e as linhas
+     * em branco. Se o arquivo não existir ou der erro de leitura, avisa e
+     * devolve uma lista vazia.
      */
     private ArrayList<String> leLinhasDoArquivo(String nomeArquivo) {
         ArrayList<String> linhas = new ArrayList<>();
@@ -246,5 +250,258 @@ public class Pousada {
             System.out.println("Erro ao gravar " + nomeArquivo + ": " + e.getMessage());
             return false;
         }
+    }
+
+    // Procura um quarto pelo número
+    private Quarto buscarQuarto(int numero) {
+        for (Quarto quarto : quartos) {
+            if (quarto.getNumero() == numero) {
+                return quarto;
+            }
+        }
+        return null;
+    }
+
+    // Converte uma data digitada em um objeto Data
+    private Data converterData(String texto) {
+        try {
+            return Data.deserializar(texto);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    // Verifica se o quarto está disponível no período
+    private boolean quartoDisponivelNoPeriodo(
+            Quarto quarto, Data inicio, Data fim) {
+
+        Reserva novaReserva
+                = new Reserva(inicio, fim, "Consulta", quarto, 'A');
+
+        for (Reserva reserva : reservas) {
+            if (reserva.getQuarto().getNumero() == quarto.getNumero()
+                    && reserva.estaVigente()
+                    && reserva.conflitaCom(novaReserva)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Verifica se o cliente possui reserva vigente
+    private boolean clientePossuiReservaVigente(String cliente) {
+        for (Reserva reserva : reservas) {
+            if (reserva.getCliente().equalsIgnoreCase(cliente)
+                    && reserva.estaVigente()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Consulta a disponibilidade de um quarto em determinada data
+    public void consultaDisponibilidade() {
+        System.out.println("===== CONSULTAR DISPONIBILIDADE =====");
+
+        String textoData = Teclado.leString(
+                "Informe a data (dd/mm/aaaa):");
+
+        Data data = converterData(textoData);
+
+        if (data == null) {
+            System.out.println("Data inválida!");
+            return;
+        }
+
+        int numero = Teclado.leInt("Informe o número do quarto:");
+
+        Quarto quarto = buscarQuarto(numero);
+
+        if (quarto == null) {
+            System.out.println("Quarto não encontrado!");
+            return;
+        }
+
+        boolean disponivel = true;
+
+        for (Reserva reserva : reservas) {
+            if (reserva.getQuarto().getNumero() == numero
+                    && reserva.estaVigente()
+                    && reserva.ocupaQuartoEm(data)) {
+                disponivel = false;
+                break;
+            }
+        }
+
+        if (disponivel) {
+            System.out.println("Quarto disponível!");
+            System.out.println(quarto);
+        } else {
+            System.out.println("Quarto indisponível nessa data!");
+        }
+    }
+
+    // Consulta reservas utilizando data, nome do cliente e/ou número do quarto
+    public void consultaReserva() {
+        System.out.println("===== CONSULTAR RESERVA =====");
+
+        String textoData = Teclado.leString(
+                "Informe a data (dd/mm/aaaa) ou ENTER para informar o nome do cliente:");
+
+        Data data = null;
+
+        if (!textoData.isBlank()) {
+            data = converterData(textoData);
+
+            if (data == null) {
+                System.out.println("Data inválida!");
+                return;
+            }
+        }
+
+        String cliente = Teclado.leString(
+                "Informe o nome do cliente ou ENTER para informar o número do quarto:");
+
+        String textoQuarto = Teclado.leString(
+                "Informe o número do quarto:");
+
+        int numeroQuarto = 0;
+
+        if (!textoQuarto.isBlank()) {
+            try {
+                numeroQuarto = Integer.parseInt(textoQuarto);
+            } catch (NumberFormatException e) {
+                System.out.println("Número do quarto inválido!");
+                return;
+            }
+        }
+
+        if (data == null && cliente.isBlank() && numeroQuarto == 0) {
+            System.out.println("Informe pelo menos um critério!");
+            return;
+        }
+
+        boolean encontrou = false;
+
+        for (Reserva reserva : reservas) {
+
+            if (reserva.getStatus() != 'A' && reserva.getStatus() != 'I') {
+                continue;
+            }
+
+            boolean corresponde = true;
+
+            if (data != null && !reserva.ocupaQuartoEm(data)) {
+                corresponde = false;
+            }
+
+            if (!cliente.isBlank()
+                    && !reserva.getCliente().equalsIgnoreCase(cliente)) {
+                corresponde = false;
+            }
+
+            if (numeroQuarto != 0
+                    && reserva.getQuarto().getNumero() != numeroQuarto) {
+                corresponde = false;
+            }
+
+            if (corresponde) {
+                System.out.println(reserva);
+                encontrou = true;
+            }
+        }
+
+        if (!encontrou) {
+            System.out.println("Não há reservas com esses dados!");
+        }
+    }
+
+    // Realiza uma nova reserva
+    public void realizaReserva() {
+        System.out.println("===== REALIZAR RESERVA =====");
+
+        String textoInicio = Teclado.leString(
+                "Informe a data inicial (dd/mm/aaaa):");
+
+        Data inicio = converterData(textoInicio);
+
+        if (inicio == null) {
+            System.out.println("Data inicial inválida!");
+            return;
+        }
+
+        String textoFim = Teclado.leString(
+                "Informe a data final (dd/mm/aaaa):");
+
+        Data fim = converterData(textoFim);
+
+        if (fim == null || fim.comparaData(inicio) <= 0) {
+            System.out.println("Data final inválida!");
+            return;
+        }
+
+        String cliente = Teclado.leString(
+                "Informe o nome do cliente:");
+
+        if (cliente.isBlank()) {
+            System.out.println("Nome do cliente inválido!");
+            return;
+        }
+
+        int numero = Teclado.leInt("Informe o número do quarto:");
+
+        Quarto quarto = buscarQuarto(numero);
+
+        if (quarto == null) {
+            System.out.println("Quarto não encontrado!");
+            return;
+        }
+
+        if (clientePossuiReservaVigente(cliente)) {
+            System.out.println(
+                    "O cliente já possui uma reserva ativa ou em check-in!");
+            return;
+        }
+
+        if (!quartoDisponivelNoPeriodo(quarto, inicio, fim)) {
+            System.out.println(
+                    "O quarto não está disponível nesse período!");
+            return;
+        }
+
+        Reserva novaReserva
+                = new Reserva(inicio, fim, cliente, quarto, 'A');
+
+        reservas.add(novaReserva);
+        dadosNaoSalvos = true;
+
+        System.out.println("Reserva realizada com sucesso!");
+        System.out.println(novaReserva);
+    }
+
+    // Cancela uma reserva ativa do cliente
+    public void cancelaReserva() {
+        System.out.println("===== CANCELAR RESERVA =====");
+
+        String cliente = Teclado.leString(
+                "Informe o nome do cliente:");
+
+        for (Reserva reserva : reservas) {
+
+            if (reserva.getCliente().equalsIgnoreCase(cliente)
+                    && reserva.getStatus() == 'A') {
+
+                reserva.setStatus('C');
+                dadosNaoSalvos = true;
+
+                System.out.println("Reserva cancelada com sucesso!");
+                return;
+            }
+        }
+
+        System.out.println(
+                "Não existe reserva ativa para esse cliente!");
     }
 }

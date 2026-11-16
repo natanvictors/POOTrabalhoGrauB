@@ -1,7 +1,9 @@
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Reserva {
+
     private Data dtInicio;
     private Data dtFim;
     private String cliente;
@@ -82,7 +84,8 @@ public class Reserva {
     }
 
     /**
-     * Formato de arquivo (reserva.txt): dtInicio TAB dtFim TAB cliente TAB numeroQuarto TAB status
+     * Formato de arquivo (reserva.txt): dtInicio TAB dtFim TAB cliente TAB
+     * numeroQuarto TAB status
      */
     public String serializar() {
         return dtInicio.serializar() + "\t" + dtFim.serializar() + "\t" + cliente + "\t"
@@ -90,10 +93,11 @@ public class Reserva {
     }
 
     /**
-     * Cria uma Reserva a partir de uma linha do reserva.txt.
-     * O quarto é localizado pelo número, na lista de quartos da pousada.
+     * Cria uma Reserva a partir de uma linha do reserva.txt. O quarto é
+     * localizado pelo número, na lista de quartos da pousada.
      *
-     * @throws IllegalArgumentException se a linha for inválida ou o quarto não existir
+     * @throws IllegalArgumentException se a linha for inválida ou o quarto não
+     * existir
      */
     public static Reserva deserializar(String linha, ArrayList<Quarto> quartosDaPousada) {
         if (linha == null) {
@@ -123,5 +127,22 @@ public class Reserva {
             throw new IllegalArgumentException("Quarto " + numeroQuarto + " não existe: " + linha);
         }
         return new Reserva(dtInicio, dtFim, campos[2].trim(), quarto, campos[4].trim().charAt(0));
+    }
+
+    // Verifica se a reserva ocupa o quarto em determinada data
+    public boolean ocupaQuartoEm(Data data) {
+        return dtInicio.comparaData(data) <= 0
+                && dtFim.comparaData(data) > 0;
+    }
+
+    // Verifica se duas reservas possuem conflito de datas
+    public boolean conflitaCom(Reserva outra) {
+        return dtInicio.comparaData(outra.dtFim) < 0
+                && dtFim.comparaData(outra.dtInicio) > 0;
+    }
+
+    // Verifica se a reserva está ativa ou em check-in
+    public boolean estaVigente() {
+        return status == 'A' || status == 'I';
     }
 }
