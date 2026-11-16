@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.Iterator;
+
 public class Reserva {
     private Data dtInicio;
     private Data dtFim;
@@ -76,5 +79,49 @@ public class Reserva {
         return "Cliente: " + cliente
                 + " | " + dtInicio + " a " + dtFim
                 + " | Quarto " + quarto;
+    }
+
+    /**
+     * Formato de arquivo (reserva.txt): dtInicio TAB dtFim TAB cliente TAB numeroQuarto TAB status
+     */
+    public String serializar() {
+        return dtInicio.serializar() + "\t" + dtFim.serializar() + "\t" + cliente + "\t"
+                + quarto.getNumero() + "\t" + status;
+    }
+
+    /**
+     * Cria uma Reserva a partir de uma linha do reserva.txt.
+     * O quarto é localizado pelo número, na lista de quartos da pousada.
+     *
+     * @throws IllegalArgumentException se a linha for inválida ou o quarto não existir
+     */
+    public static Reserva deserializar(String linha, ArrayList<Quarto> quartosDaPousada) {
+        if (linha == null) {
+            throw new IllegalArgumentException("Linha de reserva não informada");
+        }
+        String[] campos = linha.split("\t");
+        if (campos.length < 5 || campos[4].trim().length() != 1) {
+            throw new IllegalArgumentException("Linha de reserva incompleta: " + linha);
+        }
+        Data dtInicio = Data.deserializar(campos[0]);
+        Data dtFim = Data.deserializar(campos[1]);
+        int numeroQuarto;
+        try {
+            numeroQuarto = Integer.parseInt(campos[3].trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Número de quarto inválido na linha de reserva: " + linha);
+        }
+        Quarto quarto = null;
+        Iterator<Quarto> iterador = quartosDaPousada.iterator();
+        while (iterador.hasNext() && quarto == null) {
+            Quarto candidato = iterador.next();
+            if (candidato.getNumero() == numeroQuarto) {
+                quarto = candidato;
+            }
+        }
+        if (quarto == null) {
+            throw new IllegalArgumentException("Quarto " + numeroQuarto + " não existe: " + linha);
+        }
+        return new Reserva(dtInicio, dtFim, campos[2].trim(), quarto, campos[4].trim().charAt(0));
     }
 }
