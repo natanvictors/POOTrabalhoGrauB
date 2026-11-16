@@ -247,4 +247,160 @@ public class Pousada {
             return false;
         }
     }
+
+    // ===================== Estadia =====================
+
+    /**
+     * Busca a reserva com check-in ativo (status 'I') para o quarto informado.
+     * Retorna null se não encontrar.
+     */
+    public Reserva buscaReservaEmCheckInDoQuarto(int numeroQuarto) {
+        Iterator<Reserva> iterador = reservas.iterator();
+        while (iterador.hasNext()) {
+            Reserva reserva = iterador.next();
+            if (reserva.getStatus() == 'I'
+                    && reserva.getQuarto().getNumero() == numeroQuarto) {
+                return reserva;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Realiza o check-in de uma reserva (status 'A' → 'I').
+     * Regras:
+     *   - O quarto deve existir.
+     *   - Deve haver exatamente UMA reserva com status 'A' para esse quarto.
+     *   - Não pode já haver outra reserva com status 'I' no mesmo quarto.
+     *
+     * @param numeroQuarto número do quarto
+     * @return mensagem de sucesso ou de erro
+     */
+    public String realizaCheckIn(int numeroQuarto) {
+        // Verifica se o quarto existe
+        Quarto quartoEncontrado = null;
+        Iterator<Quarto> itQ = quartos.iterator();
+        while (itQ.hasNext()) {
+            Quarto q = itQ.next();
+            if (q.getNumero() == numeroQuarto) {
+                quartoEncontrado = q;
+            }
+        }
+        if (quartoEncontrado == null) {
+            return "Erro: quarto " + numeroQuarto + " não existe.";
+        }
+
+        // Verifica se já há check-in ativo no quarto
+        if (buscaReservaEmCheckInDoQuarto(numeroQuarto) != null) {
+            return "Erro: quarto " + numeroQuarto + " já possui check-in ativo.";
+        }
+
+        // Busca reserva com status 'A' para o quarto
+        Reserva reservaParaCheckIn = null;
+        int countAtivas = 0;
+        Iterator<Reserva> itR = reservas.iterator();
+        while (itR.hasNext()) {
+            Reserva r = itR.next();
+            if (r.getQuarto().getNumero() == numeroQuarto && r.getStatus() == 'A') {
+                reservaParaCheckIn = r;
+                countAtivas++;
+            }
+        }
+
+        if (countAtivas == 0) {
+            return "Erro: não há reserva ativa (status A) para o quarto " + numeroQuarto + ".";
+        }
+        if (countAtivas > 1) {
+            return "Erro: há mais de uma reserva ativa para o quarto " + numeroQuarto + ". Informe o cliente.";
+        }
+
+        reservaParaCheckIn.setStatus('I');
+        dadosNaoSalvos = true;
+        return "Check-in realizado com sucesso!\n"
+                + "Quarto  : " + numeroQuarto
+                + " | Cliente : " + reservaParaCheckIn.getCliente()
+                + " | Período : " + reservaParaCheckIn.getDtInicio()
+                + " a " + reservaParaCheckIn.getDtFim();
+    }
+
+    /**
+     * Realiza o check-out de uma reserva (status 'I' → 'O').
+     * Monta o comprovante com diárias e consumo antes de limpar o consumo.
+     *
+     * @param numeroQuarto número do quarto
+     * @return comprovante ou mensagem de erro
+     */
+    public String realizaCheckOut(int numeroQuarto) {
+        Reserva reserva = buscaReservaEmCheckInDoQuarto(numeroQuarto);
+        if (reserva == null) {
+            return "Erro: não há check-in ativo para o quarto " + numeroQuarto + ".";
+        }
+
+        Quarto quarto = reserva.getQuarto();
+        double valorDiarias = reserva.calculaValorDiarias();
+        double valorConsumo = quarto.valorTotalConsumo();
+        double totalGeral = valorDiarias + valorConsumo;
+
+        // Monta o comprovante ANTES de limpar o consumo
+        StringBuilder comprovante = new StringBuilder();
+        comprovante.append("========== COMPROVANTE DE CHECK-OUT ==========\n");
+        comprovante.append("Cliente  : ").append(reserva.getCliente()).append("\n");
+        comprovante.append("Quarto   : ").append(quarto.toString()).append("\n");
+        comprovante.append("Período  : ").append(reserva.getDtInicio())
+                   .append(" a ").append(reserva.getDtFim()).append("\n");
+        comprovante.append("Diárias  : ").append(reserva.calculaQuantidadeDias())
+                   .append(" x R$ ").append(String.format("%.2f", quarto.getDiaria()))
+                   .append(" = R$ ").append(String.format("%.2f", valorDiarias)).append("\n");
+
+        if (valorConsumo > 0) {
+            comprovante.append("--- Consumo ---\n");
+            comprovante.append(quarto.listaConsumo());
+            comprovante.append("Subtotal consumo: R$ ").append(String.format("%.2f", valorConsumo)).append("\n");
+        } else {
+            comprovante.append("Consumo  : nenhum\n");
+        }
+
+        comprovante.append("----------------------------------------------\n");
+        comprovante.append("TOTAL    : R$ ").append(String.format("%.2f", totalGeral)).append("\n");
+        comprovante.append("==============================================");
+
+        // Limpa o consumo e finaliza a reserva
+        quarto.limpaConsumo();
+        reserva.setStatus('O');
+        dadosNaoSalvos = true;
+
+        return comprovante.toString();
+    }
+
+    /**
+     * Registra o consumo de um produto no quarto que está com check-in ativo.
+     *
+     * @param numeroQuarto  número do quarto
+     * @param codigoProduto código do produto
+     * @return mensagem de sucesso ou de erro
+     */
+    public String registraConsumo(int numeroQuarto, int codigoProduto) {
+        Reserva reserva = buscaReservaEmCheckInDoQuarto(numeroQuarto);
+        if (reserva == null) {
+            return "Erro: não há check-in ativo para o quarto " + numeroQuarto + ".";
+        }
+
+        Produto produtoEncontrado = null;
+        Iterator<Produto> itP = produtos.iterator();
+        while (itP.hasNext()) {
+            Produto p = itP.next();
+            if (p.getCodigo() == codigoProduto) {
+                produtoEncontrado = p;
+            }
+        }
+        if (produtoEncontrado == null) {
+            return "Erro: produto com código " + codigoProduto + " não existe.";
+        }
+
+        reserva.getQuarto().adicionaConsumo(produtoEncontrado);
+        dadosNaoSalvos = true;
+        return "Consumo registrado: " + produtoEncontrado.getNome()
+                + " (R$ " + String.format("%.2f", produtoEncontrado.getPreco()) + ")"
+                + " → Quarto " + numeroQuarto;
+    }
 }
