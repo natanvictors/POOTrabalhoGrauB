@@ -81,7 +81,7 @@ public class Pousada {
         return nome + " (" + contato + ")";
     }
 
-    // ===================== Persistência =====================
+    // Persistência 
 
     /**
      * Formato de arquivo (pousada.txt): nome TAB contato
@@ -253,7 +253,7 @@ public class Pousada {
         }
     }
 
-    // ===================== Métodos auxiliares de busca =====================
+    // Métodos auxiliares de busca 
 
     // Procura um quarto pelo número; devolve null se não existir
     private Quarto buscaQuarto(int numeroQuarto) {
@@ -303,7 +303,7 @@ public class Pousada {
         return null;
     }
 
-    // ===================== Consultas e Reservas =====================
+    // Consultas e Reservas 
 
     // Opção 1: verifica se um quarto está livre em uma data específica
     public String consultaDisponibilidade(Data data, int numeroQuarto) {
@@ -407,8 +407,7 @@ public class Pousada {
         return "Reserva de " + reserva.getCliente() + " (Quarto " + reserva.getQuarto().getNumero() + ") cancelada com sucesso.";
     }
 
-    // ===================== Estadia e Consumo =====================
-
+    // Estadia e Consumo
     // Opção 5: realiza check-in da reserva ativa ('A') do cliente
     public String realizaCheckIn(String cliente) {
         Reserva reserva = buscaReservaPorClienteEStatus(cliente, 'A');
@@ -520,6 +519,6 @@ public class Pousada {
         dadosNaoSalvos = true;
         return "Consumo registrado: " + produtoEncontrado.getNome()
                 + " (R$ " + String.format("%.2f", produtoEncontrado.getPreco()) + ")"
-                + " -> Quarto " + reserva.getQuarto().getNumero();
+                + " - Quarto " + reserva.getQuarto().getNumero();
     }
 }
