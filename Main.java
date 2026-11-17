@@ -11,7 +11,38 @@ public class Main {
         System.out.println("7 - Registrar consumo");
         System.out.println("8 - Salvar");
         System.out.println("0 - Sair");
-        System.out.println("Selecione uma opção");
+    }
+
+    // Lê um número inteiro válido do terminal; repete se digitar letra ou vazio
+    private static int leInteiro(String mensagem) {
+        while (true) {
+            System.out.println(mensagem);
+            String texto = Teclado.leString();
+            if (texto == null) {
+                return 0;
+            }
+            try {
+                return Integer.parseInt(texto.trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Valor inválido. Digite apenas números inteiros.");
+            }
+        }
+    }
+    
+    // Lê uma data no formato dd/mm/aaaa; se permitirVazio for true, Enter retorna null
+    private static Data leData(String mensagem, boolean permitirVazio) {
+        while (true) {
+            System.out.println(mensagem);
+            String texto = Teclado.leString();
+            if (permitirVazio && (texto == null || texto.isBlank())) {
+                return null;
+            }
+            try {
+                return Data.deserializar(texto);
+            } catch (Exception e) {
+                System.out.println("Data inválida. Use o formato dd/mm/aaaa.");
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -21,38 +52,78 @@ public class Main {
         int opt;
         do {
             mostraMenu();
-            opt = Teclado.leInt();
+            opt = leInteiro("Selecione uma opção:");
             switch (opt) {
                 case 0:
+                    // Salva automaticamente se houver alterações pendentes
+                    if (pousada.temDadosNaoSalvos()) {
+                        System.out.println("Salvando alterações pendentes...");
+                        pousada.salvaDados();
+                    }
                     System.out.println("Saindo do sistema...");
                     break;
-                case 1:
+
+                case 1: // Consultar disponibilidade
+                    Data dataDisp = leData("Informe a data (dd/mm/aaaa):", false);
+                    int quartoDisp = leInteiro("Informe o número do quarto:");
+                    System.out.println(pousada.consultaDisponibilidade(dataDisp, quartoDisp));
                     break;
-                case 2:
+
+                case 2: // Consultar reserva
+                    Data dataCons = leData("Informe a data (dd/mm/aaaa) ou Enter para ignorar:", true);
+                    System.out.println("Informe o nome do cliente ou Enter para ignorar:");
+                    String clienteCons = Teclado.leString();
+                    int quartoCons = leInteiro("Informe o número do quarto ou 0 para ignorar:");
+                    System.out.println(pousada.consultaReserva(dataCons, clienteCons, quartoCons));
                     break;
-                case 3:
+
+                case 3: // Realizar reserva
+                    Data dtIni = leData("Informe a data inicial (dd/mm/aaaa):", false);
+                    Data dtFim = leData("Informe a data final (dd/mm/aaaa):", false);
+                    System.out.println("Informe o nome do cliente:");
+                    String clienteRes = Teclado.leString();
+                    int quartoRes = leInteiro("Informe o número do quarto:");
+                    System.out.println(pousada.realizaReserva(dtIni, dtFim, clienteRes, quartoRes));
                     break;
-                case 4:
+
+                case 4: // Cancelar reserva
+                    System.out.println("Informe o nome do cliente:");
+                    String clienteCanc = Teclado.leString();
+                    System.out.println(pousada.cancelaReserva(clienteCanc));
                     break;
-                case 5: // Check-in
-                    System.out.println("Número do quarto para check-in:");
-                    int quartoCheckIn = Teclado.leInt();
-                    System.out.println(pousada.realizaCheckIn(quartoCheckIn));
+
+                case 5: // Realizar check-in
+                    System.out.println("Informe o nome do cliente para check-in:");
+                    String clienteCheckIn = Teclado.leString();
+                    System.out.println(pousada.realizaCheckIn(clienteCheckIn));
                     break;
-                case 6: // Check-out
-                    System.out.println("Número do quarto para check-out:");
-                    int quartoCheckOut = Teclado.leInt();
-                    System.out.println(pousada.realizaCheckOut(quartoCheckOut));
+
+                case 6: // Realizar check-out
+                    System.out.println("Informe o nome do cliente para check-out:");
+                    String clienteCheckOut = Teclado.leString();
+                    System.out.println(pousada.realizaCheckOut(clienteCheckOut));
                     break;
+
                 case 7: // Registrar consumo
-                    System.out.println("Número do quarto:");
-                    int quartoConsumo = Teclado.leInt();
-                    System.out.println("Código do produto:");
-                    int codigoProduto = Teclado.leInt();
-                    System.out.println(pousada.registraConsumo(quartoConsumo, codigoProduto));
+                    System.out.println("Informe o nome do cliente:");
+                    String clienteConsumo = Teclado.leString();
+                    if (!pousada.clienteTemCheckIn(clienteConsumo)) {
+                        System.out.println("Erro: não há reserva em check-in para o cliente " + clienteConsumo + ".");
+                    } else {
+                        System.out.println(pousada.listaProdutosDisponiveis());
+                        int codigoProduto = leInteiro("Informe o código do produto:");
+                        System.out.println(pousada.registraConsumo(clienteConsumo, codigoProduto));
+                    }
                     break;
-                case 8:
+
+                case 8: // Salvar
+                    if (pousada.salvaDados()) {
+                        System.out.println("Dados salvos com sucesso!");
+                    } else {
+                        System.out.println("Erro ao salvar os dados.");
+                    }
                     break;
+
                 default:
                     System.out.println("Opção inválida, tente novamente.");
                     break;
